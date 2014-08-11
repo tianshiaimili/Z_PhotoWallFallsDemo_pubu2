@@ -32,7 +32,7 @@ import com.example.photowallfallsdemo.R;
 import com.example.util.LogUtils2;
 
 /**
- * 
+ * À²À²À²µÂÂêÎ÷ÑÇ
  * @author Hua
  *
  */
