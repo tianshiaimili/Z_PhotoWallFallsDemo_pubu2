@@ -75,6 +75,7 @@ public class ImageLoader {
 			int reqWidth) {
 		// 源图片的宽度
 		final int width = options.outWidth;
+//		options.outWidth
 		int inSampleSize = 1;
 		if (width > reqWidth) {
 			// 计算出实际宽度和目标宽度的比率

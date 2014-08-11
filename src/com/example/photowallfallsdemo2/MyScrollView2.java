@@ -14,18 +14,24 @@ import java.util.List;
 import java.util.Set;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
+import com.example.photowallfallsdemo.ImageDetailsActivity;
 import com.example.photowallfallsdemo.ImageLoader;
 import com.example.photowallfallsdemo.Images;
 import com.example.photowallfallsdemo.R;
@@ -122,11 +128,66 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 	 */
 	private static Set<LoadImageTask2> taskCollection;
 
+	
+	private Handler handler = new Handler(){
+		public void handleMessage(android.os.Message msg) {
+			MyScrollView2 scrollView2 = (MyScrollView2) msg.obj;
+			int scrollY = scrollView2.getScrollY();
+			/**
+			 * 当滑动到当前subScrollLayout底部（注意subScrollLayout 的高度是动态改变的）
+			 * 且 图片都加载完成也就是taskCollection种的线程为0了
+			 * 那就加载下一页
+			 */
+			if(lastScrollY == scrollY){
+				if((scrollY + scrollViewHeight ) >= subScrollLayout.getHeight()
+						&& taskCollection.isEmpty()){
+					scrollView2.loadMoreImages();
+					
+				}
+				scrollView2.checkVisibility();
+			}else {
+				
+				lastScrollY = scrollY;
+				Message message = handler.obtainMessage(0, scrollView2);
+				handler.sendMessageDelayed(message, 5);
+				
+			}
+			
+			
+			
+		};
+	};
+	
 	public MyScrollView2(Context context) {
 		super(context);
 		// TODO Auto-generated constructor stub
 	}
 	
+	protected void checkVisibility() {
+		// TODO Auto-generated method stub
+		for(int i = 0; i < imageViewList.size(); i++){
+			
+			ImageView imageView = imageViewList.get(i);
+			int borderTop  = (Integer) imageView.getTag(R.string.border_top);
+			int borderBottom  = (Integer) imageView.getTag(R.string.border_bottom);
+			if(borderBottom > getScrollY() && borderTop < getScrollY() + scrollViewHeight){
+				String imageUrl = (String) imageView.getTag(R.string.image_url);
+				Bitmap bitmap = imageLoader.getBitmapFromMemoryCache(imageUrl);
+				if(bitmap != null){
+					imageView.setImageBitmap(bitmap);
+				}else {
+					LoadImageTask2 task2 = new LoadImageTask2();
+					task2.execute(i);
+				}
+				
+			}else {
+				imageView.setImageResource(R.drawable.empty_photo);
+			}
+			
+		}
+		
+	}
+
 	public MyScrollView2(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		// TODO Auto-generated constructor stub
@@ -267,6 +328,7 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 			Bitmap bitmap = imageLoader.getBitmapFromMemoryCache(mImageUrl);
 			if(bitmap == null){
 				//缓存中没有图片的话 从之前保存的内存卡中获取，如果也 没有则从网络加载
+				LogUtils2.i("loadImage.........");
 				bitmap = loadImage(mImageUrl);
 				
 			}
@@ -289,13 +351,94 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 				addImage(bitmap , columnWidth,scaledHeight);
 				
 			}
+			
+			taskCollection.remove(this);
+			
 		}
 	
 		private void addImage(Bitmap bitmap, int columnWidth, int scaledHeight) {
 			// TODO Auto-generated method stub
-			
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(columnWidth, scaledHeight);
+			if(mImageView != null){
+				mImageView.setImageBitmap(bitmap);
+			}else {
+				
+				ImageView imageView = new ImageView(getContext());
+				imageView.setPadding(5, 5, 5, 5);
+				imageView.setLayoutParams(params);
+				imageView.setScaleType(ScaleType.FIT_XY);
+				imageView.setTag(R.string.image_url, mImageUrl);
+				imageView.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+//						Intent intent = new Intent(getContext(), ImageDetailsActivity.class);
+//						intent.putExtra("image_position", mItemPosition);
+//						getContext().startActivity(intent);
+					}
+				});
+				
+				findColumnToAdd(imageView, scaledHeight).addView(imageView);
+				imageViewList.add(imageView);
+			}
 		}
 
+		/**
+		 * 找到此时应该添加图片的一列。原则就是对四列的高度进行判断，当前高度最小的一列就是应该添加的一列。
+		 * 
+		 * @param imageView
+		 * @param imageHeight
+		 * @return 应该添加图片的一列
+		 */
+		private LinearLayout findColumnToAdd(ImageView imageView, int imageHeight){
+			
+			LogUtils2.i("firstColumnHeight=="+firstColumnHeight);
+			LogUtils2.i("secondColumnHeight=="+secondColumnHeight);
+			LogUtils2.i("thirdColumnHeight=="+thirdColumnHeight);
+			LogUtils2.i("fourColumnHeight=="+fourColumnHeight);
+			
+			if (firstColumnHeight <= secondColumnHeight) {
+				if (firstColumnHeight <= thirdColumnHeight) {
+					if(firstColumnHeight <= fourColumnHeight){
+						imageView.setTag(R.string.border_top, firstColumnHeight);
+						firstColumnHeight += imageHeight;
+						imageView.setTag(R.string.border_bottom, firstColumnHeight);
+						return firstColumnLayout;
+					}
+					
+					imageView.setTag(R.string.border_top, fourColumnHeight);
+					fourColumnHeight += imageHeight;
+					imageView.setTag(R.string.border_bottom, fourColumnHeight);
+					return fourColumnLayout;
+					
+				}
+				imageView.setTag(R.string.border_top, thirdColumnHeight);
+				thirdColumnHeight += imageHeight;
+				imageView.setTag(R.string.border_bottom, thirdColumnHeight);
+				return thirdColumnLayout;
+			} else {
+				if (secondColumnHeight <= thirdColumnHeight) {
+					if(secondColumnHeight <= fourColumnHeight){
+						imageView.setTag(R.string.border_top, secondColumnHeight);
+						secondColumnHeight += imageHeight;
+						imageView.setTag(R.string.border_bottom, secondColumnHeight);
+						return secondColumnLayout;
+					}
+					
+					
+					imageView.setTag(R.string.border_top, fourColumnHeight);
+					fourColumnHeight += imageHeight;
+					imageView.setTag(R.string.border_bottom, fourColumnHeight);
+					return fourColumnLayout;
+					
+				}
+				imageView.setTag(R.string.border_top, thirdColumnHeight);
+				thirdColumnHeight += imageHeight;
+				imageView.setTag(R.string.border_bottom, thirdColumnHeight);
+				return thirdColumnLayout;
+			}
+			
+		}
+		
 		/**
 		 * 根据传入的URL，对图片进行加载。如果这张图片已经存在于SD卡中，则直接从SD卡里读取，否则就从网络上下载。
 		 * 
@@ -309,8 +452,17 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 			File file = new File(filePath);
 			if(!file.exists()){
 				///如果内存中也不存在就从网络获取
+				LogUtils2.i("downloadImage.........");
 				downloadImage(mImageUrl);
 				
+			}
+			
+			if(mImageUrl != null ){
+				Bitmap bitmap = imageLoader.decodeSampledBitmapFromResource(file.getPath(), columnWidth);
+				if(bitmap != null){
+					imageLoader.addBitmapToMemoryCache(mImageUrl, bitmap);
+					return bitmap;
+				}
 			}
 			
 			return null;
@@ -325,36 +477,27 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 		 */
 		private void downloadImage(String mImageUrl) {
 			// TODO Auto-generated method stub
-			HttpURLConnection connection =null ;
-			URL url =null;
+			HttpURLConnection con =null ;
 			FileOutputStream fos = null;
 			BufferedOutputStream bos = null;
 			BufferedInputStream bis = null;
 			File imageFile = null;
 			try {
-				url = new URL(mImageUrl);
-				connection = (HttpURLConnection) url.openConnection();
-				connection.setConnectTimeout(5000);
-				connection.setReadTimeout(5000);
-				connection.setDoInput(true);
-				connection.setDoOutput(true);
-				///
-				int responseCode = connection.getResponseCode();
-				if(responseCode == HttpURLConnection.HTTP_OK){
-					
-					bis = new BufferedInputStream(connection.getInputStream());
-					imageFile = new File(getImagePath(mImageUrl));
-					fos = new FileOutputStream(imageFile);
-					bos = new BufferedOutputStream(fos);
-					byte[] buffer = new byte[1024];
-					int length;
-					while((length = bis.read()) != -1){
-						
-						bos.write(buffer, 0, length);
-						bos.flush();
-						
-					}
-					
+				URL url = new URL(mImageUrl);
+				con = (HttpURLConnection) url.openConnection();
+				con.setConnectTimeout(5 * 1000);
+				con.setReadTimeout(15 * 1000);
+				con.setDoInput(true);
+				con.setDoOutput(true);
+				bis = new BufferedInputStream(con.getInputStream());
+				imageFile = new File(getImagePath(mImageUrl));
+				fos = new FileOutputStream(imageFile);
+				bos = new BufferedOutputStream(fos);
+				byte[] b = new byte[1024];
+				int length;
+				while ((length = bis.read(b)) != -1) {
+					bos.write(b, 0, length);
+					bos.flush();
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -367,8 +510,8 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 					if (bos != null) {
 						bos.close();
 					}
-					if (connection != null) {
-						connection.disconnect();
+					if (con != null) {
+						con.disconnect();
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -409,8 +552,6 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 		}
 		
 	}
-
-	
 	
 	/**
 	 * 
@@ -418,6 +559,13 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		// TODO Auto-generated method stub
+		if (event.getAction() == MotionEvent.ACTION_UP) {
+			Message message = new Message();
+			message.obj = this;
+			handler.sendMessageDelayed(message, 5);
+		}
+		
+		
 		return false;
 	}
 }
