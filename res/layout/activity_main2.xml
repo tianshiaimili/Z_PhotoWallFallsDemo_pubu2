@@ -1,4 +1,4 @@
-<com.example.photowallfallsdemo.MyScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.photowallfallsdemo2.MyScrollView2 xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/my_scroll_view2"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
@@ -43,4 +43,4 @@
         
     </LinearLayout>
 
-</com.example.photowallfallsdemo.MyScrollView>
+</com.example.photowallfallsdemo2.MyScrollView2>
