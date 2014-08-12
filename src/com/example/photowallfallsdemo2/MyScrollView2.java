@@ -31,7 +31,7 @@ import com.example.photowallfallsdemo.Images;
 import com.example.photowallfallsdemo.R;
 import com.example.util.LogUtils2;
 
-/**
+/**德玛西亚
  * 啦啦啦德玛西亚
  * @author Hua
  *
@@ -311,6 +311,14 @@ public class MyScrollView2 extends ScrollView implements OnTouchListener{
 				///如果内存中也不存在就从网络获取
 				downloadImage(mImageUrl);
 				
+			}
+			
+			if(mImageUrl != null){
+				Bitmap bitmap = imageLoader.decodeSampledBitmapFromResource(mImageUrl, columnWidth);
+				if(bitmap != null){
+					imageLoader.addBitmapToMemoryCache(mImageUrl, bitmap);
+					return bitmap;
+				}
 			}
 			
 			return null;
