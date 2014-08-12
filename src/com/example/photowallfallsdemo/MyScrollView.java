@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.example.util.LogUtils2;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -389,6 +391,7 @@ public class MyScrollView extends ScrollView implements OnTouchListener {
 				imageView.setTag(R.string.border_bottom, thirdColumnHeight);
 				return thirdColumn;
 			}
+			
 		}
 
 		/**
