@@ -1,5 +1,7 @@
 package com.example.photowallfallsdemo;
 
+import com.example.util.LogUtils2;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -166,6 +168,10 @@ public class ZoomImageView extends View {
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		if (initRatio == totalRatio) {
+			/**
+			 * requestDisallowInterceptTouchEvent表示只是从viewpager那里获取触摸事件，true表示获取得
+			 * 相等的话 表示图片没有缩放 可以滑动到下一页
+			 */
 			getParent().requestDisallowInterceptTouchEvent(false);
 		} else {
 			getParent().requestDisallowInterceptTouchEvent(true);
@@ -254,6 +260,9 @@ public class ZoomImageView extends View {
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
+		
+		LogUtils2.i("onDraw............");
+		
 		switch (currentStatus) {
 		case STATUS_ZOOM_OUT:
 		case STATUS_ZOOM_IN:

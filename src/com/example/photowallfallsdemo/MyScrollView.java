@@ -12,8 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.example.util.LogUtils2;
-
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -31,6 +29,8 @@ import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
+
+import com.example.photowallfallsdemo2.ImageDetailsActivity2;
 
 /**
  * 自定义的ScrollView，在其中动态地对图片进行添加。

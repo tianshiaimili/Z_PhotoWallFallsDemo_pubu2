@@ -27,6 +27,10 @@
         </activity>
         <activity android:name="com.example.photowallfallsdemo.ImageDetailsActivity" >
         </activity>
+        
+         <activity android:name="com.example.photowallfallsdemo2.ImageDetailsActivity2" >
+        </activity>
+        
     </application>
 
 </manifest>
