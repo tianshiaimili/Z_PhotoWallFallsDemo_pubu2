@@ -220,11 +220,14 @@ public class ZoomImageView extends View {
 				} else {
 					currentStatus = STATUS_ZOOM_IN;
 				}
+				
 				// 进行缩放倍数检查，最大只允许将图片放大4倍，最小可以缩小到初始化比例
 				if ((currentStatus == STATUS_ZOOM_OUT && totalRatio < 4 * initRatio)
 						|| (currentStatus == STATUS_ZOOM_IN && totalRatio > initRatio)) {
 					scaledRatio = (float) (fingerDis / lastFingerDis);
+					
 					totalRatio = totalRatio * scaledRatio;
+					
 					if (totalRatio > 4 * initRatio) {
 						totalRatio = 4 * initRatio;
 					} else if (totalRatio < initRatio) {
@@ -297,14 +300,27 @@ public class ZoomImageView extends View {
 		// 如果当前图片宽度小于屏幕宽度，则按屏幕中心的横坐标进行水平缩放。否则按两指的中心点的横坐标进行水平缩放
 		if (currentBitmapWidth < width) {
 			translateX = (width - scaledWidth) / 2f;
+			
+			LogUtils2.i("translateX=="+translateX);
+			LogUtils2.d("width=="+width);
+			LogUtils2.i("scaledWidth=="+scaledWidth);
 		} else {
 			translateX = totalTranslateX * scaledRatio + centerPointX
 					* (1 - scaledRatio);
+			LogUtils2.i("translateX=="+translateX);
+			LogUtils2.i("totalTranslateX=="+totalTranslateX);
+			LogUtils2.i("scaledRatio=="+scaledRatio);
+			LogUtils2.i("centerPointX=="+centerPointX);
 			// 进行边界检查，保证图片缩放后在水平方向上不会偏移出屏幕
 			if (translateX > 0) {
 				translateX = 0;
 			} else if (width - translateX > scaledWidth) {
+				LogUtils2.e("width="+width);
+				LogUtils2.e("translateX="+translateX);
+				LogUtils2.e("scaledWidth="+scaledWidth);
+				
 				translateX = width - scaledWidth;
+				
 			}
 		}
 		// 如果当前图片高度小于屏幕高度，则按屏幕中心的纵坐标进行垂直缩放。否则按两指的中心点的纵坐标进行垂直缩放
@@ -326,6 +342,11 @@ public class ZoomImageView extends View {
 		totalTranslateY = translateY;
 		currentBitmapWidth = scaledWidth;
 		currentBitmapHeight = scaledHeight;
+		
+		LogUtils2.d("translateX=="+translateX);
+		LogUtils2.i("totalTranslateX=="+totalTranslateX);
+		LogUtils2.d("totalTranslateY=="+totalTranslateY);
+		LogUtils2.i("currentBitmapWidth=="+currentBitmapWidth);
 		canvas.drawBitmap(sourceBitmap, matrix, null);
 	}
 
