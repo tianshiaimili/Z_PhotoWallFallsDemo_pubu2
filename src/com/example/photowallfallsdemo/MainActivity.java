@@ -5,7 +5,7 @@ import android.view.Window;
 import android.app.Activity;
 
 /**
- * bubulalal
+ * bubulalal撒大大缩短
  * @author zero
  *
  */
