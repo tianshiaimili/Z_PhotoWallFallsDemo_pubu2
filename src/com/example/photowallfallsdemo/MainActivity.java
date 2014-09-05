@@ -4,6 +4,11 @@ import android.os.Bundle;
 import android.view.Window;
 import android.app.Activity;
 
+/**
+ * bubulalal
+ * @author zero
+ *
+ */
 public class MainActivity extends Activity {
 
 	@Override
